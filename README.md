@@ -10,6 +10,6 @@
 
 **Mata Kuliah:** Pembangunan Perangkat Lunak Orientasi Service
 
-## Deskripsi Layanan
+## Deskripsi
 
 ---
