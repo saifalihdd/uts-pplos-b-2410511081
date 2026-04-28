@@ -1,5 +1,9 @@
 const express = require('express');
 const router  = express.Router();
+const oauth   = require('../controllers/oauthController');
 
-router.get('/github', (_, res) => res.json({ message: 'Coming soon — GitHub OAuth' }));
+router.get('/github', oauth.redirectToGitHub);
+
+router.get('/github/callback', oauth.handleGitHubCallback);
+
 module.exports = router;
