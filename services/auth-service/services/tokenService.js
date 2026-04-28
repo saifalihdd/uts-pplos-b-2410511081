@@ -80,6 +80,5 @@ module.exports = {
   verifyAccessToken,    verifyRefreshToken,
   isBlacklisted,        blacklistToken,
   saveRefreshToken,     isRefreshTokenValid,
-  revokeRefreshToken,   revokeAllRefreshTokens,
-  getActiveSessions,
+  revokeRefreshToken   
 };
