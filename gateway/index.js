@@ -67,6 +67,15 @@ app.post('/api/events', verifyToken, (req, res, next) => {
   changeOrigin: true,
 }));
 
+app.post('/api/events/:id/categories', verifyToken, (req, rest, next) => {
+  req.headers['x-user-id'] = String(req.user.sub);
+  req.headers['x-user-email'] = req.user.email;
+  next();
+}, createProxyMiddleware({
+  target: EVENT_URL,
+  changeOrigin: true,
+}));
+
 app.put('/api/events/:id', verifyToken, (req, res, next) => {
   req.headers['x-user-id'] = String(req.user.sub);
   req.headers['x-user-email'] = req.user.email;
@@ -85,7 +94,17 @@ app.delete('/api/events/:id', verifyToken, (req, res, next) => {
   changeOrigin: true,
 }));
 
-// ── TICKET SERVICE — protected ─────────────────────────────────────────────
+// TICKET SERVICE — protected
+app.post('/api/events/:id/categories', verifyToken, (req, rest, next) => {
+  req.headers['x-user-id'] = String(req.user.sub);
+  req.headers['x-user-email'] = req.user.email;
+  req.headers['x-internal-key'] = INTERNAL_KEY; 
+  next();
+}, createProxyMiddleware({
+  target: TICKET_URL,
+  changeOrigin: true,
+}));
+
 app.use(
   ['/api/tickets'],
   verifyToken,
@@ -101,6 +120,16 @@ app.use(
     },
   })
 );
+
+// ORDER SERVICE - protected
+app.use('/api/orders', verifyToken, (req, rest, next) => {
+  req.headers['x-user-id'] = String(req.user.sub);
+  req.headers['x-user-email'] = req.user.email;
+  next();
+}, createProxyMiddleware({
+  target: EVENT_URL,
+  changeOrigin: true,
+}));
 
 // Health check
 app.get('/up', (_, res) => res.json({ status: 'ok', service: 'gateway' }));

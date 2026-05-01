@@ -14,7 +14,10 @@ class InternalController extends Controller
     }
 
     public function getTicketByQr(Request $request, string $qrCode): JsonResponse
-    {
+    {   
+        \Log::info('Internal key received: ' . $request->header('X-Internal-Key'));
+        \Log::info('Internal key expected: ' . env('INTERNAL_SERVICE_KEY'));
+
         if (!$this->checkInternalKey($request))
             return response()->json(['message' => 'Unauthorized'], 401);
 

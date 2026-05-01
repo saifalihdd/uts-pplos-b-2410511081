@@ -1,7 +1,7 @@
 const axios = require('axios');
 
 const client = axios.create({
-  baseURL: process.env.EVENT_SERVICE_URL || 'http://localhost:8002',
+  baseURL: (process.env.EVENT_SERVICE_URL || 'http://localhost:8002') + '/api',
   timeout: 5000,
   headers: {
     'Content-Type':   'application/json',
