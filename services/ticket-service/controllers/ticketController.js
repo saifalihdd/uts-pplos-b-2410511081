@@ -1,5 +1,5 @@
-const pool      = require('../config/database');
-const eventClient = require('../services/eventServiceClient');
+const ValidationLog = require('../models/validationLogModel');
+const eventClient   = require('../services/eventServiceClient');
 
 exports.validateTicket = async (req, res) => {
   const { qr_code }   = req.body;
@@ -67,17 +67,13 @@ exports.getMyTickets = async (req, res) => {
   const perPage = Math.min(parseInt(req.query.per_page || '10'), 50);
   const offset  = (page - 1) * perPage;
 
-  try {
-    const [[{ total }]] = await pool.execute(
-      'SELECT COUNT(*) as total FROM validation_logs WHERE validator_id = ?',
-      [validatorId]
-    );
+  if (!validatorId) {
+    return res.status(400).json({ success: false, message: 'Header x-user-id wajib disertakan.' });
+  }
 
-    const [logs] = await pool.execute(
-      `SELECT * FROM validation_logs WHERE validator_id = ?
-       ORDER BY created_at DESC LIMIT ? OFFSET ?`,
-      [validatorId, perPage, offset]
-    );
+  try {
+    const total = await ValidationLog.countByValidatorId(validatorId);
+    const logs  = await ValidationLog.findByValidatorIdWithPagination(validatorId, perPage, offset);
 
     return res.status(200).json({
       success: true,
@@ -108,11 +104,7 @@ exports.getTicketDetail = async (req, res) => {
 
 async function logValidation(qrCode, validatorId, eventId, status, message, ip) {
   try {
-    await pool.execute(
-      `INSERT INTO validation_logs (qr_code, validator_id, event_id, status, message, ip_address)
-       VALUES (?, ?, ?, ?, ?, ?)`,
-      [qrCode, validatorId || 0, eventId || 0, status, message, ip || null]
-    );
+    await ValidationLog.createLog(qrCode, validatorId, eventId, status, message, ip);
   } catch (err) {
     console.error('[logValidation] Gagal simpan log:', err.message);
   }
