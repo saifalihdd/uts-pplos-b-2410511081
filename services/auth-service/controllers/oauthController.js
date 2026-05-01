@@ -1,6 +1,6 @@
 const axios    = require('axios');
 const bcrypt   = require('bcryptjs');
-const pool     = require('../config/database');
+const User     = require('../models/userModel');
 const tokenSvc = require('../services/tokenService');
 
 exports.redirectToGitHub = (req, res) => {
@@ -67,38 +67,26 @@ exports.handleGitHubCallback = async (req, res) => {
       });
     }
 
-    let [rows] = await pool.execute(
-      'SELECT * FROM users WHERE oauth_provider = ? AND oauth_id = ? LIMIT 1',
-      ['github', String(githubUser.id)]
-    );
-
-    let user = rows[0];
+    let user = await User.findByOAuth('github', githubUser.id);
 
     if (!user) {
-      [rows] = await pool.execute(
-        'SELECT * FROM users WHERE email = ? LIMIT 1',
-        [email]
-      );
-      user = rows[0];
+      user = await User.findByEmail(email);
     }
 
     if (!user) {
       const randomPass = await bcrypt.hash(Math.random().toString(36), 12);
-      const [result]   = await pool.execute(
-        `INSERT INTO users (name, email, password, oauth_provider, oauth_id, avatar, role)
-         VALUES (?, ?, ?, ?, ?, ?, ?)`,
-        [
-          githubUser.name || githubUser.login,
-          email,
-          randomPass,
-          'github',
-          String(githubUser.id),
-          githubUser.avatar_url,
-          'user',
-        ]
-      );
+      const insertId   = await User.create({
+        name: githubUser.name || githubUser.login,
+        email: email,
+        password: randomPass,
+        oauth_provider: 'github',
+        oauth_id: githubUser.id,
+        avatar: githubUser.avatar_url,
+        role: 'user'
+      });
+      
       user = {
-        id: result.insertId,
+        id: insertId,
         name: githubUser.name || githubUser.login,
         email,
         avatar: githubUser.avatar_url,
@@ -106,10 +94,7 @@ exports.handleGitHubCallback = async (req, res) => {
         oauth_provider: 'github',
       };
     } else {
-      await pool.execute(
-        `UPDATE users SET oauth_provider = ?, oauth_id = ?, avatar = ? WHERE id = ?`,
-        ['github', String(githubUser.id), githubUser.avatar_url, user.id]
-      );
+      await User.updateOAuthProfile(user.id, 'github', githubUser.id, githubUser.avatar_url);
       user.oauth_provider = 'github';
       user.avatar         = githubUser.avatar_url;
     }
