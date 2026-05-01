@@ -6,6 +6,8 @@ const morgan  = require('morgan');
 
 const authRoutes  = require('./routes/authRoutes');
 const oauthRoutes = require('./routes/oauthRoutes');
+const { verifyAccessToken } = require('./services/tokenService');
+const { jwtMiddleware } = require('./middleware/jwtMiddleware');
 
 const app  = express();
 const PORT = process.env.PORT || 8001;
@@ -15,6 +17,7 @@ app.use(cors());
 app.use(express.json());
 app.use(morgan('dev'));
 
+app.get('/test', jwtMiddleware, authRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/auth/oauth', oauthRoutes);
 
