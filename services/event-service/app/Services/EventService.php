@@ -3,10 +3,11 @@
 namespace App\Services;
 
 use App\Models\Event;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class EventService
 {
-    public function getAll(array $filters, int $perPage, int $page)
+    public function getAll(array $filters, int $perPage, int $page): LengthAwarePaginator
     {
         return Event::with('ticketCategories')
             ->filter($filters)
@@ -16,7 +17,7 @@ class EventService
 
     public function findById(int $id): Event
     {
-        return Event::with('ticketCategories')->findOrFail($id);
+        return Event::with(['ticketCategories'])->findOrFail($id);
     }
 
     public function create(array $data, int $organizerId): Event
@@ -32,20 +33,27 @@ class EventService
     {
         $event = Event::findOrFail($id);
 
+        // 403 — bukan organizer event ini
         if ($event->organizer_id !== $requesterId)
             abort(403, 'Anda tidak berhak mengedit event ini.');
 
+        // 409 — tidak bisa cancel event yang sudah ada tiket terjual
+        if (isset($data['status']) && $data['status'] === 'cancelled' && $event->sold_tickets > 0)
+            abort(409, 'Event tidak bisa dibatalkan karena sudah ada tiket terjual.');
+
         $event->update($data);
-        return $event->fresh();
+        return $event->fresh(['ticketCategories']);
     }
 
     public function delete(int $id, int $requesterId): void
     {
         $event = Event::findOrFail($id);
 
+        // 403
         if ($event->organizer_id !== $requesterId)
             abort(403, 'Anda tidak berhak menghapus event ini.');
 
+        // 409
         if ($event->sold_tickets > 0)
             abort(409, 'Event tidak bisa dihapus karena sudah ada tiket terjual.');
 
