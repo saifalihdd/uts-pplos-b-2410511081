@@ -26,7 +26,7 @@
             "method": "POST",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "url": "{{base_url}}/api/auth/register",
-            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Budi Santoso\",\n  \"email\": \"budi@example.com\",\n  \"password\": \"password123\"\n}" }
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Saif Ali\",\n  \"email\": \"2410511081@gmail.com\",\n  \"password\": \"password123\"\n}" }
           }
         },
         {
@@ -42,7 +42,7 @@
             "method": "POST",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "url": "{{base_url}}/api/auth/login",
-            "body": { "mode": "raw", "raw": "{\n  \"email\": \"budi@example.com\",\n  \"password\": \"password123\"\n}" }
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"2410511081@gmail.com\",\n  \"password\": \"password123\"\n}" }
           }
         },
         {
@@ -139,7 +139,7 @@
         {
           "name": "Update Event",
           "request": {
-            "method": "PATCH",
+            "method": "PUT",
             "header": [
               { "key": "Authorization", "value": "Bearer {{access_token}}" },
               { "key": "Content-Type",  "value": "application/json" }
